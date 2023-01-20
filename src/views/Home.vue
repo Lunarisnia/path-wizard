@@ -1,7 +1,19 @@
 <template>
-  <HelloWorld />
+  <Grid :col="col" :row="row" />
 </template>
 
-<script lang="ts" setup>
-  import HelloWorld from '@/components/HelloWorld.vue'
+<script lang="ts">
+import Grid from '@/components/Grid.vue';
+import { defineComponent } from 'vue';
+export default defineComponent({
+  components: {
+    Grid
+  },
+  data() {
+    return {
+      row: 4,
+      col: 5
+    }
+  }
+})
 </script>
