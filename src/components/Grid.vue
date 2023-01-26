@@ -4,12 +4,14 @@
         <v-btn @click="resetAllCard()">Reset All Card</v-btn>
         <v-btn @click="closeHalfCard()">Close Half Card</v-btn>
         <v-btn @click="openAllCard()">Open All Card</v-btn>
-        <!-- <v-btn @click="openHalfCard('A')">Open 1</v-btn>
-        <v-btn @click="openHalfCard('B')">Open 2</v-btn> -->
+        <h1>Instruction:</h1>
+        <h2>{{ instruction }}</h2>
         <v-responsive class="d-flex align-center fill-height">
             <v-row align='center' no-gutters style="height: 150px;" v-for="i in row" :key="i">
                 <v-col v-for="j in col" :key="j" class="child-flex">
-                    <v-img class="mx-auto" :src='grid[i-1][j-1].status ? grid[i-1][j-1].item : removedCard' width="100" @click="removeACard(i - 1, j - 1)" />
+                    <p>{{ i - 1}}, {{ j - 1}}</p>
+                    <v-img class="mx-auto" :src='grid[i - 1][j - 1].status ? grid[i - 1][j - 1].item : removedCard'
+                        width="100" @click="removeACard(i - 1, j - 1)" />
                     <!-- <v-btn @click="removeACard(i - 1, j - 1)">{{ i- 1 }}, {{ j- 1 }}</v-btn> -->
                 </v-col>
             </v-row>
@@ -18,10 +20,35 @@
 </template>
 
 <script lang="ts">
+interface GameloopData {
+    choosenScenario: Array<Scenario>,
+    step: number
+}
+interface Coordinates {
+    row: number,
+    col: number
+}
 interface Card {
     class: string,
     status: number,
     item?: string,
+}
+interface Scenario {
+    movementSuggestion: NumberState,
+    cardToRemove: Array<Coordinates>,
+    currentClass: string,
+    nextClass: string
+}
+enum Phase {
+    START,
+    COUNTDOWN,
+    INSTRUCT,
+    TAKEOUT,
+    DONE
+}
+enum NumberState {
+    ODD,
+    EVEN
 }
 const defaultCardSetA: string = "https://deckofcardsapi.com/static/img/KS.png";
 const defaultCardSetB: string = "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Playing_card_heart_A.svg/819px-Playing_card_heart_A.svg.png";
@@ -83,7 +110,7 @@ const cardImageList: Array<string> = [
     "https://deckofcardsapi.com/static/img/KC.png",
 ];
 const shuffleArray = (array: Array<any>) => {
-    let currentIndex = array.length,  randomIndex;
+    let currentIndex = array.length, randomIndex;
 
     // While there remain elements to shuffle.
     while (currentIndex != 0) {
@@ -94,7 +121,7 @@ const shuffleArray = (array: Array<any>) => {
 
         // And swap it with the current element.
         [array[currentIndex], array[randomIndex]] = [
-        array[randomIndex], array[currentIndex]];
+            array[randomIndex], array[currentIndex]];
     }
 
     return array;
@@ -110,16 +137,143 @@ export default {
     },
     data() {
         return {
+            phase: Phase.START,
             grid: [
                 [{ class: "A", item: defaultCardSetA, status: 1 }, { class: "B", item: defaultCardSetB, status: 1 }, { class: "A", item: defaultCardSetA, status: 1 }, { class: "B", item: defaultCardSetB, status: 1 }, { class: "A", item: defaultCardSetA, status: 1 }],
                 [{ class: "B", item: defaultCardSetB, status: 1 }, { class: "A", item: defaultCardSetA, status: 1 }, { class: "B", item: defaultCardSetB, status: 1 }, { class: "A", item: defaultCardSetA, status: 1 }, { class: "B", item: defaultCardSetB, status: 1 }],
                 [{ class: "A", item: defaultCardSetA, status: 1 }, { class: "B", item: defaultCardSetB, status: 1 }, { class: "A", item: defaultCardSetA, status: 1 }, { class: "B", item: defaultCardSetB, status: 1 }, { class: "A", item: defaultCardSetA, status: 1 }],
                 [{ class: "B", item: defaultCardSetB, status: 1 }, { class: "A", item: defaultCardSetA, status: 1 }, { class: "B", item: defaultCardSetB, status: 1 }, { class: "A", item: defaultCardSetA, status: 1 }, { class: "B", item: defaultCardSetB, status: 1 }]
             ] as Array<Array<Card>>,
+            scenarios: [
+                [
+                    {
+                        movementSuggestion: NumberState.ODD,
+                        cardToRemove: [
+                            {
+                                row: 0,
+                                col: 0,
+                            },
+                            {
+                                row: 0,
+                                col: 2,
+                            },
+                            {
+                                row: 3,
+                                col: 0,
+                            },
+                            {
+                                row: 3,
+                                col: 2,
+                            },
+                        ],
+                        currentClass: "A",
+                        nextClass: "B",
+                    },
+                    {
+                        movementSuggestion: NumberState.EVEN,
+                        cardToRemove: [
+                            {
+                                row: 2,
+                                col: 0,
+                            },
+                            {
+                                row: 2,
+                                col: 1,
+                            }
+                        ],
+                        currentClass: "B",
+                        nextClass: "B",
+                    },
+                    {
+                        movementSuggestion: NumberState.EVEN,
+                        cardToRemove: [
+                            {
+                                row: 2,
+                                col: 0,
+                            },
+                            {
+                                row: 2,
+                                col: 1,
+                            }
+                        ],
+                        currentClass: "B",
+                        nextClass: "B",
+                    },
+                ]
+            ] as Array<Array<Scenario>>,
             removedCard: "https://cutewallpaper.org/24/playing-card-back-png/colorful-38b1d-poker-3f9cb-card-65195-back-f3490-opengameartorg.png",
+            currentClass: "",
+            instruction: "",
+            numberOfStep: 0,
         };
     },
+    async mounted() {
+        await this.startPhase();
+    },
     methods: {
+        async gameloop(data: GameloopData) {
+            switch (this.phase) {
+                case Phase.START:
+                    await this.startPhase();
+                    break;
+                case Phase.INSTRUCT:
+                    await this.instructPhase(data);
+                    break;
+                case Phase.COUNTDOWN:
+                    await this.countdownPhase(data);
+                    break;
+                case Phase.TAKEOUT:
+                    await this.takeoutPhase(data);
+                    break;
+                default:
+                    await this.endPhase();
+                    break;
+            }
+        },
+        async startPhase() {
+            this.resetAllCard();
+            this.currentClass = this.closeHalfCard();
+            await this.sleep(5000);
+            this.openAllCard();
+            this.phase = Phase.INSTRUCT;
+            const choosenScenario: Array<Scenario> = this.scenarios[0];
+            this.numberOfStep = choosenScenario.length;
+            await this.gameloop({ choosenScenario: choosenScenario, step: 0 });
+        },
+        async instructPhase(data: GameloopData) {
+            this.instruction = `Pilih salah satu angka: ${this.randomMovementNumber(data.choosenScenario[data.step].movementSuggestion)}`;
+            this.phase = Phase.COUNTDOWN;
+            this.gameloop(data);
+        },
+        async countdownPhase(data: GameloopData) {
+            await this.sleep(5000);
+            this.instruction = "Move!";
+            await this.sleep(5000);
+            this.phase = Phase.TAKEOUT;
+            this.gameloop(data)
+        },
+        async takeoutPhase(data: GameloopData) {
+            for (const coordinate of data.choosenScenario[data.step].cardToRemove) {
+                this.removeACard(coordinate.row, coordinate.col);
+            }
+            data.step += 1;
+            if (this.numberOfStep === data.step) {
+                this.phase = Phase.DONE;
+                this.gameloop(data);
+            } else {
+                this.phase = Phase.INSTRUCT;
+                this.gameloop(data);
+            }
+        },
+        async endPhase() {
+            this.instruction = "DONE";
+        },
+        sleep(ms: number): Promise<void> {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        },
+        randomChoice(nChoice: number): number {
+            return Math.floor(Math.random() * nChoice);
+        },
         removeACard(row: number, col: number) {
             this.grid[row][col].status = 0;
         },
@@ -129,7 +283,7 @@ export default {
             })
         },
         resetAllCard() {
-            const cil : Array<string> = shuffleArray(cardImageList.concat());
+            const cil: Array<string> = shuffleArray(cardImageList.concat());
             this.grid = this.grid.map((row: Array<Card>) => {
                 return row.map((col: Card) => ({ ...col, item: cil.pop() }))
             });
@@ -140,15 +294,26 @@ export default {
             });
         },
         closeHalfCard() {
-            const targetClass: string = ["A", "B"][Math.floor(Math.random() * 2)];
+            /**
+             * Return the Class that is open
+             */
+            const openClass: string = ["A", "A"][this.randomChoice(2)];
             this.grid = this.grid.map((row: Array<Card>) => {
-                return row.map((col: Card) => col.class === targetClass ? col : ({ ...col, status: 0 }));
+                return row.map((col: Card) => col.class === openClass ? col : ({ ...col, status: 0 }));
             });
+            return openClass;
         },
         openAllCard() {
             this.grid = this.grid.map((row: Array<Card>) => {
                 return row.map((col: Card) => col.status ? col : ({ ...col, status: 1 }));
             });
+        },
+        randomMovementNumber(movementSuggestion: NumberState): Array<number> {
+            const numbers : Array<number> = Array.from(Array(20), (_, x) => x);
+            const evenNumber = shuffleArray(numbers.filter(x => x % 2 === 0)).slice(0, 3);
+            const oddNumber = shuffleArray(numbers.filter(x => x % 2 !== 0)).slice(0, 3);
+            if (movementSuggestion === NumberState.EVEN) return evenNumber;
+            return oddNumber;
         }
     }
 }
