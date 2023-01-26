@@ -1,5 +1,5 @@
 <template>
-  <Grid :col="col" :row="row" />
+  <Grid :col="col" :row="row" :debug="false" />
 </template>
 
 <script lang="ts">
