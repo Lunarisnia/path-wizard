@@ -10,11 +10,11 @@
             <h3>Countdown: {{ counter }}</h3>
         </v-container>
         <v-responsive class="d-flex align-center fill-height">
-            <v-row align='center' no-gutters style="height: 150px;" v-for="i in row" :key="i">
+            <v-row align='center' no-gutters :style="gridHeight" v-for="i in row" :key="i">
                 <v-col v-for="j in col" :key="j" class="child-flex">
                     <p v-if="debug">{{ i - 1}}, {{ j - 1}} : {{ grid[i - 1][j - 1].class }}</p>
                     <v-img class="mx-auto" :src='grid[i - 1][j - 1].status ? grid[i - 1][j - 1].item : removedCard'
-                        width="100" @click="debug ? removeACard(i - 1, j - 1) : null" />
+                        :width="gridWidth" @click="debug ? removeACard(i - 1, j - 1) : null" />
                 </v-col>
             </v-row>
         </v-responsive>
@@ -396,6 +396,28 @@ export default {
             counter: 0,
             phaseCountdown: 5,
         };
+    },
+    computed: {
+        gridWidth(): string {
+            switch (this.$vuetify.display.name) {
+                case 'xs': return "50px"; 
+                case 'sm': return "135px";
+                case 'md': return "170px";
+                case 'lg': return "100px";
+                case 'xl': return "125px";
+                default: return "275px"
+            }
+        },
+        gridHeight(): string {
+            switch (this.$vuetify.display.name) {
+                case 'xs': return "height: 100px"; 
+                case 'sm': return "height: 225px";
+                case 'md': return "height: 275px";
+                case 'lg': return "height: 175px";
+                case 'xl': return "height: 200px";
+                default: return "height: 400px"
+            }
+        }
     },
     async mounted() {
         await this.startPhase();
