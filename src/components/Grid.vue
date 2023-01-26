@@ -1,23 +1,27 @@
 <template>
-    <v-container class="fill-height">
+    <v-container>
         <v-container v-if="debug">
             <v-btn @click="separateVisualization()">Separate Visualization</v-btn>
             <v-btn @click="resetAllCard()">Reset All Card</v-btn>
             <v-btn @click="closeHalfCard()">Close Half Card</v-btn>
             <v-btn @click="openAllCard()">Open All Card</v-btn>
-            <h1>Instruction:</h1>
-            <h2>{{ instruction }}</h2>
-            <h3>Countdown: {{ counter }}</h3>
+            <h1 style="color: white">Instruction:</h1>
+            <h2 style="color: white">{{ instruction }}</h2>
+            <h3 style="color: white">Countdown: {{ counter }}</h3>
         </v-container>
         <v-responsive class="d-flex align-center fill-height">
             <v-row align='center' no-gutters :style="gridHeight" v-for="i in row" :key="i">
                 <v-col v-for="j in col" :key="j" class="child-flex">
-                    <p v-if="debug">{{ i - 1}}, {{ j - 1}} : {{ grid[i - 1][j - 1].class }}</p>
+                    <p v-if="debug" style="color: white">{{ i - 1}}, {{ j - 1}} : {{ grid[i - 1][j - 1].class }}</p>
                     <v-img class="mx-auto" :src='grid[i - 1][j - 1].status ? grid[i - 1][j - 1].item : removedCard'
                         :width="gridWidth" @click="debug ? removeACard(i - 1, j - 1) : null" />
                 </v-col>
             </v-row>
         </v-responsive>
+        <v-container class="d-flex flex-column fill-height justify-center align-center text-white">
+            <h1 style="color: white">{{ instruction }}</h1>
+            <h3>PETUNJUK SELANJUTNYA DALAM: {{ counter }}</h3>
+        </v-container>
     </v-container>
 </template>
 
@@ -141,6 +145,8 @@ export default {
     data() {
         return {
             phase: Phase.START,
+            phaseCountdown: 15,
+            takeoutPhaseCountdown: 5,
             grid: [
                 [{ class: "A", item: defaultCardSetA, status: 1 }, { class: "B", item: defaultCardSetB, status: 1 }, { class: "A", item: defaultCardSetA, status: 1 }, { class: "B", item: defaultCardSetB, status: 1 }, { class: "A", item: defaultCardSetA, status: 1 }],
                 [{ class: "B", item: defaultCardSetB, status: 1 }, { class: "A", item: defaultCardSetA, status: 1 }, { class: "B", item: defaultCardSetB, status: 1 }, { class: "A", item: defaultCardSetA, status: 1 }, { class: "B", item: defaultCardSetB, status: 1 }],
@@ -148,6 +154,225 @@ export default {
                 [{ class: "B", item: defaultCardSetB, status: 1 }, { class: "A", item: defaultCardSetA, status: 1 }, { class: "B", item: defaultCardSetB, status: 1 }, { class: "A", item: defaultCardSetA, status: 1 }, { class: "B", item: defaultCardSetB, status: 1 }]
             ] as Array<Array<Card>>,
             scenarios: [
+                [
+                    {
+                        movementSuggestion: NumberState.ODD,
+                        cardToRemove: [
+                            {
+                                row: 2,
+                                col: 0,
+                            },
+                            {
+                                row: 3,
+                                col: 3,
+                            },
+                            {
+                                row: 0,
+                                col: 2,
+                            },
+                            {
+                                row: 0,
+                                col: 4,
+                            },
+                        ],
+                        currentClass: "A",
+                        nextClass: "B",
+                    },
+                    {
+                        movementSuggestion: NumberState.ODD,
+                        cardToRemove: [
+                            {
+                                row: 1,
+                                col: 0,
+                            },
+                            {
+                                row: 3,
+                                col: 2,
+                            },
+                            {
+                                row: 3,
+                                col: 4,
+                            },
+                            {
+                                row: 1,
+                                col: 4,
+                            },
+                            {
+                                row: 0,
+                                col: 3,
+                            },
+                            {
+                                row: 3,
+                                col: 0,
+                            },
+                        ],
+                        currentClass: "B",
+                        nextClass: "A",
+                    },
+                    {
+                        movementSuggestion: NumberState.ODD,
+                        cardToRemove: [
+                            {
+                                row: 0,
+                                col: 0,
+                            },
+                            {
+                                row: 3,
+                                col: 1,
+                            },
+                            {
+                                row: 2,
+                                col: 4,
+                            },
+                            {
+                                row: 1,
+                                col: 3,
+                            },
+                        ],
+                        currentClass: "A",
+                        nextClass: "B",
+                    },
+                    {
+                        movementSuggestion: NumberState.ODD,
+                        cardToRemove: [
+                            {
+                                row: 0,
+                                col: 1,
+                            },
+                            {
+                                row: 1,
+                                col: 2,
+                            },
+                            {
+                                row: 2,
+                                col: 3,
+                            },
+                        ],
+                        currentClass: "B",
+                        nextClass: "A",
+                    },
+                    {
+                        movementSuggestion: NumberState.ODD,
+                        cardToRemove: [
+                            {
+                                row: 1,
+                                col: 1,
+                            },
+                            {
+                                row: 2,
+                                col: 2,
+                            },
+                        ],
+                        currentClass: "A",
+                        nextClass: "B",
+                    },
+                ],
+                [
+                    {
+                        movementSuggestion: NumberState.EVEN,
+                        cardToRemove: [
+                            {
+                                row: 0,
+                                col: 1,
+                            },
+                            {
+                                row: 2,
+                                col: 1,
+                            },
+                            {
+                                row: 3,
+                                col: 0,
+                            },
+                            {
+                                row: 1,
+                                col: 4,
+                            },
+                            {
+                                row: 3,
+                                col: 4,
+                            },
+                        ],
+                        currentClass: "A",
+                        nextClass: "A",
+                    },
+                    {
+                        movementSuggestion: NumberState.ODD,
+                        cardToRemove: [
+                            {
+                                row: 0,
+                                col: 0,
+                            },
+                            {
+                                row: 2,
+                                col: 0,
+                            },
+                            {
+                                row: 3,
+                                col: 1,
+                            },
+                            {
+                                row: 3,
+                                col: 3,
+                            },
+                            {
+                                row: 2,
+                                col: 4,
+                            },
+                            {
+                                row: 0,
+                                col: 4,
+                            },
+                        ],
+                        currentClass: "A",
+                        nextClass: "B",
+                    },
+                    {
+                        movementSuggestion: NumberState.ODD,
+                        cardToRemove: [
+                            {
+                                row: 1,
+                                col: 0,
+                            },
+                            {
+                                row: 3,
+                                col: 2,
+                            },
+                            {
+                                row: 2,
+                                col: 3,
+                            },
+                            {
+                                row: 0,
+                                col: 3,
+                            },
+                        ],
+                        currentClass: "B",
+                        nextClass: "A",
+                    },
+                    {
+                        movementSuggestion: NumberState.ODD,
+                        cardToRemove: [
+                            {
+                                row: 0,
+                                col: 2,
+                            },
+                            {
+                                row: 1,
+                                col: 1,
+                            },
+                            {
+                                row: 2,
+                                col: 2,
+                            },
+                            {
+                                row: 1,
+                                col: 3,
+                            },
+                        ],
+                        currentClass: "B",
+                        nextClass: "A",
+                    },
+                ],
                 [
                     {
                         movementSuggestion: NumberState.ODD,
@@ -268,6 +493,10 @@ export default {
                         nextClass: "B",
                     },
                 ],
+                
+
+
+                // CLASS B START
                 [
                     {
                         movementSuggestion: NumberState.EVEN,
@@ -391,10 +620,9 @@ export default {
             ] as Array<Array<Scenario>>,
             removedCard: "https://cutewallpaper.org/24/playing-card-back-png/colorful-38b1d-poker-3f9cb-card-65195-back-f3490-opengameartorg.png",
             currentClass: "",
-            instruction: "",
+            instruction: "PILIH SALAH SATU KARTU YANG TERBUKA DENGAN JARI MU.",
             numberOfStep: 0,
-            counter: 0,
-            phaseCountdown: 5,
+            counter: 0
         };
     },
     computed: {
@@ -404,7 +632,7 @@ export default {
                 case 'sm': return "135px";
                 case 'md': return "170px";
                 case 'lg': return "100px";
-                case 'xl': return "125px";
+                case 'xl': return "100px";
                 default: return "275px"
             }
         },
@@ -414,7 +642,7 @@ export default {
                 case 'sm': return "height: 225px";
                 case 'md': return "height: 275px";
                 case 'lg': return "height: 175px";
-                case 'xl': return "height: 200px";
+                case 'xl': return "height: 175px";
                 default: return "height: 400px"
             }
         }
@@ -459,7 +687,7 @@ export default {
         },
         async countdownPhase(data: GameloopData) {
             await this.countdown(this.phaseCountdown);
-            this.instruction = "Move!";
+            this.instruction = "GERAK SESUAI DENGAN ANGKA YANG TELAH DIPILIH!";
             await this.countdown(this.phaseCountdown);
             this.phase = Phase.TAKEOUT;
             this.gameloop(data)
@@ -473,12 +701,14 @@ export default {
                 this.phase = Phase.DONE;
                 this.gameloop(data);
             } else {
+                this.instruction = "ANDA PASTI TIDAK ADA DI KARTU-KARTU INI"
+                await this.countdown(this.takeoutPhaseCountdown);
                 this.phase = Phase.INSTRUCT;
                 this.gameloop(data);
             }
         },
         async endPhase() {
-            this.instruction = "DONE";
+            this.instruction = "PIKIRAN ANDA TELAH SAYA KENDALIKAN DAN ANDA TERTANGKAP";
         },
         async countdown(duration: number) {
             duration = Math.round(duration);
@@ -519,7 +749,7 @@ export default {
             /**
              * Return the Class that is open
              */
-            const openClass: string = ["A", "B"][this.randomChoice(2)];
+            const openClass: string = ["A", "A"][this.randomChoice(2)];
             this.grid = this.grid.map((row: Array<Card>) => {
                 return row.map((col: Card) => col.class === openClass ? col : ({ ...col, status: 0 }));
             });
