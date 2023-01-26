@@ -1,10 +1,12 @@
 <template>
-  <v-app-bar flat>
+  <v-app-bar flat color="blue-grey darken-3">
     <v-app-bar-title>
       <v-icon icon="mdi-circle-slice-6" />
 
-      Essentials Preset
+      Luna's Playground
     </v-app-bar-title>
+    <v-btn>About</v-btn>
+    <v-btn>Home</v-btn>
   </v-app-bar>
 </template>
 
