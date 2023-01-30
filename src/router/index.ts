@@ -4,7 +4,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 const routes = [
   {
     path: '/',
-    component: () => import('@/layouts/default/Default.vue'),
+    component: () => import('@/layouts/default/Fullscreen.vue'),
     children: [
       {
         path: '',
@@ -14,9 +14,15 @@ const routes = [
         // which is lazy-loaded when the route is visited.
         component: () => import(/* webpackChunkName: "home" */ '@/views/Home.vue'),
       },
+    ],
+  },
+  {
+    path: '/game',
+    component: () => import('@/layouts/default/Default.vue'),
+    children: [
       {
-        path: '/pathwiz',
-        name: 'Home',
+        path: 'pathwiz',
+        name: 'Path Wizard',
         component: () => import('@/views/PathWiz.vue'),
       },
     ],
